@@ -1,0 +1,165 @@
+[bduncan@openbd application]$ vmc login
+Attempting login to [https://api.cloudfoundry.com]
+Email: brianduncan408@gmail.com
+Password: **********
+Successfully logged into [https://api.cloudfoundry.com]
+
+[bduncan@openbd application]$ cd node/
+[bduncan@openbd node]$ ll
+total 4
+-rw-rw-r-- 1 bduncan bduncan 346 Nov 29 13:19 server.js
+[bduncan@openbd node]$ vmc push
+Would you like to deploy from the current directory? [Yn]: Y
+Application Name: bduncan-node
+Detected a Node.js Application, is this correct? [Yn]: Y
+Application Deployed URL [bduncan-node.cloudfoundry.com]: 
+Memory reservation (128M, 256M, 512M, 1G, 2G) [64M]: 
+How many instances? [1]: 
+Bind existing services to 'bduncan-node'? [yN]: N
+Create services to bind to 'bduncan-node'? [yN]: N
+Would you like to save this configuration? [yN]: N
+Creating Application: OK
+Uploading Application:
+  Checking for available resources: OK
+  Packing application: OK
+  Uploading (0K): OK   
+Push Status: OK
+Staging Application 'bduncan-node': OK                                          
+Starting Application 'bduncan-node': OK                                         
+
+[bduncan@openbd node]$ vmc apps
+
++---------------+----+---------+--------------------------------+----------+
+| Application   | #  | Health  | URLS                           | Services |
++---------------+----+---------+--------------------------------+----------+
+| bduncan-hello | 1  | RUNNING | bduncan-hello.cloudfoundry.com |          |
+| bduncan-node  | 1  | RUNNING | bduncan-node.cloudfoundry.com  |          |
++---------------+----+---------+--------------------------------+----------+
+
+[bduncan@openbd node]$ curl -i http://bduncan-node.cloudfoundry.com
+HTTP/1.1 200 OK
+Server: nginx
+Date: Thu, 29 Nov 2012 21:21:21 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+Keep-Alive: timeout=20
+Vary: Accept-Encoding
+
+Hello World, from Cloudfoundry
+[bduncan@openbd node]$ echo "Scaling up" ; vmc instances bduncan-node 5 ; vmc apps
+Scaling up
+Scaling Application instances up to 5: OK
+
+
++---------------+----+---------+--------------------------------+----------+
+| Application   | #  | Health  | URLS                           | Services |
++---------------+----+---------+--------------------------------+----------+
+| bduncan-hello | 1  | RUNNING | bduncan-hello.cloudfoundry.com |          |
+| bduncan-node  | 5  | RUNNING | bduncan-node.cloudfoundry.com  |          |
++---------------+----+---------+--------------------------------+----------+
+
+[bduncan@openbd node]$ echo "Scaling down" ; vmc instances bduncan-node 1 ; vmc apps
+Scaling down
+Scaling Application instances down to 1: OK
+
+
++---------------+----+---------+--------------------------------+----------+
+| Application   | #  | Health  | URLS                           | Services |
++---------------+----+---------+--------------------------------+----------+
+| bduncan-hello | 1  | RUNNING | bduncan-hello.cloudfoundry.com |          |
+| bduncan-node  | 1  | RUNNING | bduncan-node.cloudfoundry.com  |          |
++---------------+----+---------+--------------------------------+----------+
+
+[bduncan@openbd node]$ 
+
+[bduncan@openbd application]$ vmc create-service mongodb mongoinst1
+Creating Service: OK
+
+[bduncan@openbd node]$ vmc bind-service mongoinst1 bduncan-node
+Binding Service [mongoinst1]: OK
+Stopping Application 'bduncan-node': OK
+Staging Application 'bduncan-node': OK                                          
+Starting Application 'bduncan-node': OK       
+                                  
+[bduncan@openbd node]$ vmc update bduncan-node
+Uploading Application:
+  Checking for available resources: OK
+  Processing resources: OK
+  Packing application: OK
+  Uploading (59K): OK   
+Push Status: OK
+Stopping Application 'bduncan-node': OK
+Staging Application 'bduncan-node': OK                                          
+Starting Application 'bduncan-node': OK                                         
+
+[bduncan@openbd node]$ curl -i http://bduncan-node.cloudfoundry.com
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 30 Nov 2012 05:10:45 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+Keep-Alive: timeout=20
+Vary: Accept-Encoding
+
+[bduncan@openbd node]$ curl -X POST -i http://bduncan-node.cloudfoundry.com
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 30 Nov 2012 05:10:57 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+Keep-Alive: timeout=20
+Vary: Accept-Encoding
+
+{"ip":"172.30.49.25","ts":"Fri Nov 30 2012","_id":"50b83fe1b1e27b745a000001"}
+[bduncan@openbd node]$ curl -X POST -i http://bduncan-node.cloudfoundry.com
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 30 Nov 2012 05:11:20 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+Keep-Alive: timeout=20
+Vary: Accept-Encoding
+
+{"ip":"172.30.49.25","ts":"Fri Nov 30 2012","_id":"50b83ff8b1e27b745a000002"}
+
+[bduncan@openbd node]$ curl -X POST -i http://bduncan-node.cloudfoundry.com
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 30 Nov 2012 05:15:13 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+Keep-Alive: timeout=20
+Vary: Accept-Encoding
+
+{"ip":"172.30.49.21","ts":"Fri Nov 30 2012","_id":"50b840e0b1e27b745a000003"}
+
+[bduncan@openbd node]$ curl -i http://bduncan-node.cloudfoundry.com
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 30 Nov 2012 05:15:15 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+Keep-Alive: timeout=20
+Vary: Accept-Encoding
+
+Fri Nov 30 2012 = 2
+
+#### A few more posts and a major update to server.js to use map reduce
+
+[bduncan@openbd node]$ curl -i http://bduncan-node.cloudfoundry.com
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 30 Nov 2012 18:31:20 GMT
+Content-Type: text/plain
+Transfer-Encoding: chunked
+Connection: keep-alive
+Keep-Alive: timeout=20
+Vary: Accept-Encoding
+
+Fri Nov 30 2012 = 4
